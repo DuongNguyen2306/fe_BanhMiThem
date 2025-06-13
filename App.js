@@ -1,20 +1,121 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { MaterialIcons } from '@expo/vector-icons';
+import { View, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function App() {
+// Import screens
+import LoginScreen from './screens/LoginScreen';
+import InputDataScreen from './screens/InputDataScreen';
+import OrderScreen from './screens/OrderScreen';
+import OrderConfirmScreen from './screens/OrderConfirmScreen';
+import OrderSuccessScreen from './screens/OrderSuccessScreen';
+import StatsScreen from './screens/StatsScreen';
+import ProfileScreen from './screens/ProfileScreen';
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+const App = () => {
+  const [userPhone, setUserPhone] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkLoginStatus = async () => {
+      try {
+        const storedPhone = await AsyncStorage.getItem('userPhone');
+        if (storedPhone) {
+          setUserPhone(storedPhone);
+        }
+      } catch (error) {
+        console.log('Error checking login status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  const MainTabs = () => {
+    return (
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ color, size }) => {
+            let iconName;
+            if (route.name === 'Nhập dữ liệu') iconName = 'home';
+            else if (route.name === 'Đặt hàng') iconName = 'shopping-cart';
+            else if (route.name === 'Xem dự đoán') iconName = 'star';
+            else if (route.name === 'Thông tin') iconName = 'person';
+            return <MaterialIcons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#d32f2f',
+          tabBarInactiveTintColor: 'gray',
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen 
+          name="Nhập dữ liệu" 
+          component={InputDataScreen} 
+          initialParams={{ userPhone }} 
+        />
+        <Tab.Screen 
+          name="Đặt hàng" 
+          component={OrderScreen} 
+          initialParams={{ userPhone }} 
+        />
+        <Tab.Screen 
+          name="Xem dự đoán" 
+          component={StatsScreen} 
+          initialParams={{ userPhone }} 
+        />
+        <Tab.Screen 
+          name="Thông tin" 
+          component={ProfileScreen} 
+          initialParams={{ userPhone, setUserPhone }} 
+        />
+      </Tab.Navigator>
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {userPhone ? (
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen 
+              name="Xem thông tin" 
+              component={OrderConfirmScreen}
+              options={{ headerShown: true, title: 'Thông tin đặt hàng' }}
+            />
+            <Stack.Screen 
+              name="Đặt hàng thành công" 
+              component={OrderSuccessScreen}
+              options={{ headerShown: true, title: 'Thành công' }}
+            />
+          </>
+        ) : (
+          <Stack.Screen 
+            name="Login" 
+            component={LoginScreen} 
+            initialParams={{ setUserPhone }} 
+          />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
