@@ -13,9 +13,10 @@ import {
   StatusBar
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_ENDPOINTS from '../src/api/apiConfig';
 
-const ProfileScreen = ({ route, navigation }) => {
-  const { userPhone: routeUserPhone, setUserPhone } = route.params || {};
+const ProfileScreen = ({ route, navigation, setUserPhone }) => {
+  const { userPhone: routeUserPhone } = route.params || {};
   const [name, setName] = useState('');
   const [phone, setPhone] = useState(routeUserPhone || '');
   const [address, setAddress] = useState('');
@@ -26,7 +27,7 @@ const ProfileScreen = ({ route, navigation }) => {
       const loadProfile = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch(`http://192.168.0.198:3000/api/profiles/${routeUserPhone}`);
+          const response = await fetch(`${API_ENDPOINTS.PROFILES}/${routeUserPhone}`);
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           const data = await response.json();
           console.log('Profile data received:', data);
@@ -60,9 +61,9 @@ const ProfileScreen = ({ route, navigation }) => {
 
     setIsLoading(true);
     try {
-      console.log('Attempting profile save to:', `http://192.168.0.198:3000/api/profiles for user ${routeUserPhone}`);
+      console.log('Attempting profile save to:', `${API_ENDPOINTS.PROFILES} for user ${routeUserPhone}`);
       
-      const response = await fetch('http://192.168.0.198:3000/api/profiles', {
+      const response = await fetch(API_ENDPOINTS.PROFILES, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, address, password: '123456' }),
@@ -104,7 +105,7 @@ const ProfileScreen = ({ route, navigation }) => {
             try {
               await AsyncStorage.removeItem('userPhone');
               try {
-                await fetch('http://192.168.0.198:3000/api/logout', {
+                await fetch(API_ENDPOINTS.LOGOUT, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                 });

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_ENDPOINTS from '../src/api/apiConfig'; // Import API endpoints
 
 const LoginScreen = ({ route, navigation }) => {
   const { setUserPhone } = route.params || {};
@@ -30,10 +31,10 @@ const LoginScreen = ({ route, navigation }) => {
 
     setIsLoading(true);
     try {
-      console.log('Attempting login to:', 'http://192.168.0.198:3000/api/login');
+      console.log('Attempting login to:', API_ENDPOINTS.LOGIN);
       console.log('Login data:', { phone, password });
       
-      const response = await fetch('http://192.168.0.198:3000/api/login', {
+      const response = await fetch(API_ENDPOINTS.LOGIN, { // Use centralized endpoint
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, password }),

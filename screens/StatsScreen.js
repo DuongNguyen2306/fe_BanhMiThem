@@ -8,6 +8,7 @@ import {
   Dimensions
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import API_ENDPOINTS from '../src/api/apiConfig'; // Import API endpoints
 
 const screenWidth = Dimensions.get('window').width - 40;
 
@@ -33,7 +34,7 @@ const StatsScreen = ({ route }) => {
       const loadStats = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch(`http://192.168.0.198:3000/api/stats/${userPhone}`);
+          const response = await fetch(`${API_ENDPOINTS.STATS}/${userPhone}`); // Use centralized endpoint
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           
           const data = await response.json();

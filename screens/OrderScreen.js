@@ -11,6 +11,7 @@ import {
   Platform,
   SafeAreaView
 } from 'react-native';
+import API_ENDPOINTS from '../src/api/apiConfig'; // Import API endpoints
 
 const OrderScreen = ({ route, navigation }) => {
   const { userPhone } = route.params || {};
@@ -42,9 +43,9 @@ const OrderScreen = ({ route, navigation }) => {
 
     setIsLoading(true);
     try {
-      console.log('Attempting order to:', `http://192.168.0.198:3000/api/orders for user ${userPhone}`);
+      console.log('Attempting order to:', `${API_ENDPOINTS.ORDERS} for user ${userPhone}`);
       
-      const response = await fetch('http://192.168.0.198:3000/api/orders', {
+      const response = await fetch(API_ENDPOINTS.ORDERS, { // Use centralized endpoint
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
@@ -133,7 +134,7 @@ const OrderScreen = ({ route, navigation }) => {
                 keyboardType="numeric"
               />
               
-              <Text style={styles.inputLabel}>Bơ kiến (kg)</Text>
+              <Text style={styles.inputLabel}>Bơ (kg)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="0"

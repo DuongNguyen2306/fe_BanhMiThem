@@ -12,6 +12,7 @@ import {
   SafeAreaView
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import API_ENDPOINTS from '../src/api/apiConfig'; // Import API endpoints
 
 const InputDataScreen = ({ route, navigation }) => {
   const { userPhone } = route.params || {};
@@ -32,9 +33,9 @@ const InputDataScreen = ({ route, navigation }) => {
 
     setIsLoading(true);
     try {
-      console.log('Attempting sales to:', `http://192.168.0.198:3000/api/sales for user ${userPhone}`);
+      console.log('Attempting sales to:', `${API_ENDPOINTS.SALES} for user ${userPhone}`);
       
-      const response = await fetch('http://192.168.0.198:3000/api/sales', {
+      const response = await fetch(API_ENDPOINTS.SALES, { // Use centralized endpoint
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -118,7 +119,7 @@ const InputDataScreen = ({ route, navigation }) => {
                 keyboardType="numeric"
               />
 
-              <Text style={styles.inputLabel}>Khối lượng chả lòng hỏng bỏ đi (gram)</Text>
+              <Text style={styles.inputLabel}>Khối lượng chả tổng hợp bỏ đi (gram)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="100"

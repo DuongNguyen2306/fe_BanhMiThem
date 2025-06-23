@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
+import API_ENDPOINTS from '../src/api/apiConfig'; // Import API endpoints
 
 const OrderConfirmScreen = ({ route, navigation }) => {
   const { orderId, userPhone } = route.params || {};
@@ -23,7 +24,7 @@ const OrderConfirmScreen = ({ route, navigation }) => {
       // Load user profile
       const loadProfile = async () => {
         try {
-          const response = await fetch(`http://192.168.0.198:3000/api/profiles/${userPhone}`);
+          const response = await fetch(`${API_ENDPOINTS.PROFILES}/${userPhone}`); // Use centralized endpoint
           if (response.ok) {
             const data = await response.json();
             if (data) {
@@ -54,9 +55,9 @@ const OrderConfirmScreen = ({ route, navigation }) => {
     setIsLoading(true);
     try {
       // Update profile
-      console.log('Attempting profile update to:', `http://192.168.0.198:3000/api/profiles for user ${userPhone}`);
+      console.log('Attempting profile update to:', `${API_ENDPOINTS.PROFILES} for user ${userPhone}`);
       
-      const profileResponse = await fetch('http://192.168.0.198:3000/api/profiles', {
+      const profileResponse = await fetch(API_ENDPOINTS.PROFILES, { // Use centralized endpoint
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, address, password: '123456' }),
@@ -69,7 +70,7 @@ const OrderConfirmScreen = ({ route, navigation }) => {
         if (profileResult.success) {
           // Confirm order if orderId exists
           if (orderId) {
-            const confirmResponse = await fetch('http://192.168.0.198:3000/api/confirm-order', {
+            const confirmResponse = await fetch(API_ENDPOINTS.CONFIRM_ORDER, { // Use centralized endpoint
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ orderId }),
@@ -208,5 +209,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// Make sure to export the component as default
 export default OrderConfirmScreen;

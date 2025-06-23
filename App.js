@@ -14,6 +14,8 @@ import OrderConfirmScreen from './screens/OrderConfirmScreen';
 import OrderSuccessScreen from './screens/OrderSuccessScreen';
 import StatsScreen from './screens/StatsScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import PredictionScreen from './screens/PredictionScreen';
+import OrderHistoryScreen from './screens/OrderHistoryScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -23,7 +25,6 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
     const checkLoginStatus = async () => {
       try {
         const storedPhone = await AsyncStorage.getItem('userPhone');
@@ -48,6 +49,10 @@ const App = () => {
     );
   }
 
+  const ProfileWrapper = (props) => {
+    return <ProfileScreen {...props} setUserPhone={setUserPhone} />;
+  };
+
   const MainTabs = () => {
     return (
       <Tab.Navigator
@@ -57,6 +62,7 @@ const App = () => {
             if (route.name === 'Nhập dữ liệu') iconName = 'home';
             else if (route.name === 'Đặt hàng') iconName = 'shopping-cart';
             else if (route.name === 'Xem dự đoán') iconName = 'star';
+            else if (route.name === 'Lịch sử đơn hàng') iconName = 'history';
             else if (route.name === 'Thông tin') iconName = 'person';
             return <MaterialIcons name={iconName} size={size} color={color} />;
           },
@@ -77,13 +83,18 @@ const App = () => {
         />
         <Tab.Screen 
           name="Xem dự đoán" 
-          component={StatsScreen} 
+          component={PredictionScreen} 
+          initialParams={{ userPhone }} 
+        />
+        <Tab.Screen 
+          name="Lịch sử đơn hàng" 
+          component={OrderHistoryScreen} 
           initialParams={{ userPhone }} 
         />
         <Tab.Screen 
           name="Thông tin" 
-          component={ProfileScreen} 
-          initialParams={{ userPhone, setUserPhone }} 
+          component={ProfileWrapper} 
+          initialParams={{ userPhone }}
         />
       </Tab.Navigator>
     );
@@ -104,6 +115,16 @@ const App = () => {
               name="Đặt hàng thành công" 
               component={OrderSuccessScreen}
               options={{ headerShown: true, title: 'Thành công' }}
+            />
+            <Stack.Screen 
+              name="Dự đoán" 
+              component={PredictionScreen}
+              options={{ headerShown: true, title: 'Dự đoán AI' }}
+            />
+            <Stack.Screen 
+              name="Lịch sử đơn hàng" 
+              component={OrderHistoryScreen}
+              options={{ headerShown: true, title: 'Lịch sử đơn hàng' }}
             />
           </>
         ) : (
