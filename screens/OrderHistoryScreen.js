@@ -24,6 +24,17 @@ const OrderHistoryScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
+  // Define prices at the component level
+  const prices = {
+    'Chả lụa': 107000,
+    'Chả đỏ': 143000,
+    'Pate': 93500,
+    'Xúc xích tỏi': 113300,
+    'Jambon': 173800,
+    'Bơ': 99000,
+    'Chà bông': 120000,
+  }
+
   const fetchOrderHistory = async (isRefresh = false) => {
     if (!userPhone) {
       setLoading(false)
@@ -38,11 +49,20 @@ const OrderHistoryScreen = ({ route, navigation }) => {
       const response = await axios.get(`${API_ENDPOINTS.ORDERS}/${userPhone}`, {
         timeout: 5000,
       })
-      // Chuyển đổi totalWeight thành số để tránh lỗi ghép chuỗi
-      const formattedOrders = response.data.map(order => ({
-        ...order,
-        totalWeight: Number(order.totalWeight) || 0, // Đảm bảo là số, mặc định 0 nếu NaN
-      }))
+      // Chuyển đổi totalWeight thành số và tính toán giá tiền
+      const formattedOrders = response.data.map(order => {
+        const totalAmount = order.items.reduce((sum, item) => {
+          const pricePerKg = prices[item.name] || 0
+          const weight = Number(item.weight) || 0
+          const quantity = Number(item.quantity) || 0
+          return sum + (weight * pricePerKg * quantity)
+        }, 0)
+        return {
+          ...order,
+          totalWeight: Number(order.totalWeight) || 0,
+          totalAmount: totalAmount, // Thêm tổng tiền vào mỗi đơn hàng
+        }
+      })
       setOrders(formattedOrders)
       console.log("Order history fetched successfully:", formattedOrders)
     } catch (error) {
@@ -88,8 +108,8 @@ const OrderHistoryScreen = ({ route, navigation }) => {
     }
   }
 
-  const renderOrderItem = ({ item, index }) => (
-    <View style={[styles.orderItem, index === 0 && styles.firstItem]}>
+  const renderOrderItem = ({ item }) => (
+    <View style={styles.orderItem}>
       <View style={styles.orderHeader}>
         <View style={styles.orderInfo}>
           <MaterialIcons name="receipt" size={24} color="#d32f2f" />
@@ -104,25 +124,32 @@ const OrderHistoryScreen = ({ route, navigation }) => {
       </View>
 
       <View style={styles.itemsList}>
-        {item.items.map((orderItem, idx) => (
-          <View key={idx} style={styles.itemRow}>
-            <Text style={styles.itemName}>{orderItem.name}</Text>
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemQuantity}>x{orderItem.quantity}</Text>
-              <Text style={styles.itemWeight}>{orderItem.weight}kg</Text>
+        {item.items.map((orderItem, idx) => {
+          const pricePerKg = prices[orderItem.name] || 0
+          const weight = Number(orderItem.weight) || 0
+          const quantity = Number(orderItem.quantity) || 0
+          const itemTotal = weight * pricePerKg * quantity
+          return (
+            <View key={idx} style={styles.itemRow}>
+              <Text style={styles.itemName}>{orderItem.name}</Text>
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemQuantity}>x{orderItem.quantity}</Text>
+                <Text style={styles.itemWeight}>{orderItem.weight}kg</Text>
+                <Text style={styles.itemPrice}>{itemTotal.toLocaleString()}đ</Text>
+              </View>
             </View>
-          </View>
-        ))}
+          )
+        })}
       </View>
 
       <View style={styles.orderFooter}>
         <View style={styles.footerLeft}>
           <Text style={styles.totalLabel}>Tổng tiền:</Text>
           <Text style={styles.totalWeight}>
-            Tổng KL: {item.totalWeight}kg {/* Hiển thị trực tiếp */}
+            Tổng KL: {item.totalWeight}kg
           </Text>
         </View>
-        <Text style={styles.totalAmount}>0đ</Text>
+        <Text style={styles.totalAmount}>{item.totalAmount.toLocaleString()}đ</Text>
       </View>
     </View>
   )
@@ -257,9 +284,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  firstItem: {
-    marginTop: 0,
-  },
   orderHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -311,10 +335,23 @@ const styles = StyleSheet.create({
     color: "#333",
     flex: 1,
   },
+  itemDetails: {
+    alignItems: "flex-end",
+  },
   itemQuantity: {
     fontSize: 14,
     fontWeight: "600",
     color: "#666",
+  },
+  itemWeight: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 2,
+  },
+  itemPrice: {
+    fontSize: 12,
+    color: "#d32f2f",
+    marginTop: 2,
   },
   orderFooter: {
     flexDirection: "row",
@@ -333,14 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#d32f2f",
-  },
-  itemDetails: {
-    alignItems: "flex-end",
-  },
-  itemWeight: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 2,
   },
   footerLeft: {
     flex: 1,
